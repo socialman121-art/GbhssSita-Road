@@ -270,4 +270,56 @@ function applySchoolData(data) {
 
 
 // Start the website
+loadSchoolWebsite();    if (gallery) {
+
+      gallery.innerHTML = "";
+
+      data.gallery.forEach(photo => {
+
+        if (!photo || !photo.url) {
+          return;
+        }
+
+
+        const img =
+          document.createElement("img");
+
+        img.src = photo.url;
+
+        img.alt =
+          photo.caption || "School photo";
+
+        img.loading = "lazy";
+
+
+        gallery.appendChild(img);
+
+      });
+
+    }
+
+  }
+
+
+  // Google Maps / contact link
+  const mapLink =
+    document.getElementById("mapLink");
+
+  if (
+    mapLink &&
+    data.mapUrl
+  ) {
+
+    mapLink.href = data.mapUrl;
+
+    mapLink.target = "_blank";
+
+    mapLink.rel = "noopener noreferrer";
+
+  }
+
+}
+
+
+// Start the website
 loadSchoolWebsite();
