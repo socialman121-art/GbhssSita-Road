@@ -344,4 +344,224 @@ function applySchoolData(data) {
         } else {
 
           url =
-           
+            photo.url ||
+            photo.imageUrl ||
+            photo.src ||
+            photo.photoUrl ||
+            "";
+
+          caption =
+            photo.caption ||
+            photo.title ||
+            "School photo";
+        }
+
+
+        if (!url) {
+          return;
+        }
+
+
+        const container =
+          document.createElement("div");
+
+        container.className =
+          "gallery-item";
+
+
+        const image =
+          document.createElement("img");
+
+        image.src = url;
+
+        image.alt = caption;
+
+        image.loading = "lazy";
+
+
+        image.onerror = function () {
+
+          container.remove();
+
+        };
+
+
+        container.appendChild(image);
+
+
+        const text =
+          document.createElement("p");
+
+        text.textContent = caption;
+
+        container.appendChild(text);
+
+
+        gallery.appendChild(container);
+
+      });
+    }
+  }
+
+
+  // ----------------------------------------
+  // GOOGLE MAPS
+  // ----------------------------------------
+
+  const mapLink =
+    document.getElementById("mapLink");
+
+  if (mapLink) {
+
+    if (data.mapUrl) {
+
+      mapLink.href = data.mapUrl;
+
+      mapLink.target = "_blank";
+
+      mapLink.rel =
+        "noopener noreferrer";
+
+      mapLink.style.display =
+        "inline-block";
+
+    } else {
+
+      mapLink.style.display =
+        "none";
+    }
+  }
+
+
+  // ----------------------------------------
+  // FOOTER
+  // ----------------------------------------
+
+  setText(
+    "year",
+    new Date().getFullYear()
+  );
+
+  setText(
+    "footerName",
+    data.schoolName ||
+    DEFAULT_DATA.schoolName
+  );
+}
+
+
+// ==========================================
+// HIDE LOADING SCREEN
+// ==========================================
+
+function hideLoading() {
+
+  document.body.classList.add("loaded");
+
+  const loading =
+    document.getElementById("loading");
+
+  if (loading) {
+
+    loading.style.display = "none";
+  }
+}
+
+
+// ==========================================
+// SHOW ERROR
+// ==========================================
+
+function showError(error) {
+
+  console.error(
+    "Firebase / Firestore error:",
+    error
+  );
+
+
+  const loading =
+    document.getElementById("loading");
+
+  if (loading) {
+
+    loading.textContent =
+      "Welcome to GBHSS Sita Road";
+
+    loading.style.display = "none";
+  }
+
+
+  document.body.classList.add("loaded");
+
+
+  // Show default information
+  // even if Firestore cannot be reached.
+
+  applySchoolData(DEFAULT_DATA);
+}
+
+
+// ==========================================
+// LOAD SCHOOL WEBSITE
+// ==========================================
+
+async function loadSchoolWebsite() {
+
+  try {
+
+    console.log(
+      "Connecting to Firestore..."
+    );
+
+
+    const snapshot =
+      await getDoc(CONTENT_DOC);
+
+
+    if (snapshot.exists()) {
+
+      const data =
+        snapshot.data();
+
+
+      console.log(
+        "School data loaded successfully.",
+        data
+      );
+
+
+      applySchoolData(data);
+
+    } else {
+
+      console.warn(
+        "Firestore document does not exist:"
+      );
+
+      console.warn(
+        "Site / Gbhsssitaraod"
+      );
+
+
+      // Website still works with defaults.
+
+      applySchoolData(DEFAULT_DATA);
+    }
+
+
+    hideLoading();
+
+
+  } catch (error) {
+
+    showError(error);
+  }
+}
+
+
+// ==========================================
+// START WEBSITE
+// ==========================================
+
+loadSchoolWebsite();
