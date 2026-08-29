@@ -1,11 +1,13 @@
+import { firebaseConfig } from "./firebase-config.js";
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+
 import {
   getFirestore,
   doc,
   getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-// Firebase configuration comes from firebase-config.js
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
@@ -21,16 +23,16 @@ async function loadSchoolWebsite() {
       applySchoolData(data);
     }
 
-    // Remove loading message
     document.body.classList.add("loaded");
 
   } catch (error) {
     console.error("Firebase/Firestore error:", error);
 
-    // Do not leave the visitor permanently stuck on Loading
+    // Don't leave the visitor permanently stuck on Loading
     document.body.classList.add("loaded");
 
     const loading = document.querySelector("#loading");
+
     if (loading) {
       loading.textContent = "Welcome to GBHSS Sita Road";
     }
@@ -46,6 +48,7 @@ function setText(id, value) {
 }
 
 function applySchoolData(data) {
+
   // School information
   setText("schoolName", data.schoolName);
   setText("schoolAddress", data.schoolAddress);
@@ -132,6 +135,7 @@ function applySchoolData(data) {
         if (!photo.url) return;
 
         const img = document.createElement("img");
+
         img.src = photo.url;
         img.alt = photo.caption || "School photo";
         img.loading = "lazy";
