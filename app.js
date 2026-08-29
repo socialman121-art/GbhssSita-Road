@@ -1,311 +1,455 @@
+// ==========================================
+// GBHSS SITA ROAD - FIREBASE APP
+// ==========================================
+
 import { firebaseConfig } from "./firebase-config.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { initializeApp } from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 
 import {
   getFirestore,
   doc,
   getDoc
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+} from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 
-// ===============================
-// Firebase
-// ===============================
+// ------------------------------------------
+// Firebase initialization
+// ------------------------------------------
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 
-// Firestore document:
-// Collection: site
-// Document: content
+// ------------------------------------------
+// Firestore document
+// Collection: Site
+// Document: Gbhsssitaraod
+// ------------------------------------------
 
-const CONTENT_DOC = doc(db, "site", "content");
+const CONTENT_DOC = doc(db, "Site", "Gbhsssitaraod");
 
 
-// ===============================
-// Helper
-// ===============================
+// ------------------------------------------
+// Safe text setter
+// ------------------------------------------
 
 function setText(id, value) {
   const element = document.getElementById(id);
 
-  if (element && value !== undefined && value !== null) {
-    element.textContent = value;
+  if (!element) {
+    return;
+  }
+
+  if (value !== undefined && value !== null) {
+    element.textContent = String(value);
   }
 }
 
 
-// ===============================
-// Apply school data
-// ===============================
+// ------------------------------------------
+// Show website
+// ------------------------------------------
+
+function showWebsite() {
+  document.body.classList.add("loaded");
+
+  const loading = document.getElementById("loading");
+
+  if (loading) {
+    loading.style.display = "none";
+  }
+}
+
+
+// ------------------------------------------
+// Show loading error
+// ------------------------------------------
+
+function showError(message) {
+  console.error(message);
+
+  const loading = document.getElementById("loading");
+
+  if (loading) {
+    loading.textContent =
+      "Unable to load school information. Please try again.";
+  }
+
+  document.body.classList.add("loaded");
+}
+
+
+// ------------------------------------------
+// School information
+// ------------------------------------------
 
 function applySchoolData(data) {
 
-  // School information
+  // School name
+  setText(
+    "schoolName",
+    data.schoolName || "GBHSS Sita Road"
+  );
 
-  setText("schoolName", data.schoolName);
-  setText("schoolAddress", data.schoolAddress);
-  setText("aboutText", data.about);
-  setText("visionText", data.vision);
-  setText("missionText", data.mission);
-  setText("contactInfo", data.contact);
+  // School address
+  setText(
+    "schoolAddress",
+    data.schoolAddress || "Sita Road, Sindh, Pakistan"
+  );
 
-  // Timetable
+  // About
+  setText(
+    "aboutText",
+    data.about || "Welcome to GBHSS Sita Road."
+  );
 
-  setText("timetableNote", data.timetable);
+  // Vision
+  setText(
+    "visionText",
+    data.vision || ""
+  );
 
-  // Footer
+  // Mission
+  setText(
+    "missionText",
+    data.mission || ""
+  );
 
-  setText("footerName", data.schoolName);
+  // Contact
+  setText(
+    "contactInfo",
+    data.contact || ""
+  );
 
 
-  // ===============================
+  // ----------------------------------------
   // Notices
-  // ===============================
+  // ----------------------------------------
 
   const noticeBox = document.getElementById("noticeList");
 
-  if (noticeBox && Array.isArray(data.notices)) {
+  if (noticeBox) {
 
     noticeBox.innerHTML = "";
 
-    if (data.notices.length === 0) {
-      noticeBox.innerHTML = "<p>No notices available.</p>";
+    if (Array.isArray(data.notices) && data.notices.length > 0) {
+
+      data.notices.forEach((notice) => {
+
+        if (!notice) {
+          return;
+        }
+
+        const item = document.createElement("div");
+        item.className = "notice-item";
+
+        const title = document.createElement("h3");
+
+        title.textContent =
+          notice.title ||
+          notice.heading ||
+          "Notice";
+
+        item.appendChild(title);
+
+
+        const message = document.createElement("p");
+
+        message.textContent =
+          notice.message ||
+          notice.text ||
+          notice.description ||
+          "";
+
+        item.appendChild(message);
+
+
+        if (notice.date) {
+
+          const date = document.createElement("small");
+
+          date.textContent =
+            "Date: " + String(notice.date);
+
+          item.appendChild(date);
+        }
+
+
+        noticeBox.appendChild(item);
+
+      });
+
+    } else {
+
+      const empty = document.createElement("p");
+
+      empty.textContent = "No notices available.";
+
+      noticeBox.appendChild(empty);
     }
-
-    data.notices.forEach((notice) => {
-
-      if (!notice) return;
-
-      const item = document.createElement("div");
-      item.className = "notice-item";
-
-      const title = document.createElement("h3");
-      title.textContent = notice.title || "Notice";
-
-      const text = document.createElement("p");
-      text.textContent = notice.text || "";
-
-      item.appendChild(title);
-      item.appendChild(text);
-
-      noticeBox.appendChild(item);
-    });
   }
 
 
-  // ===============================
+  // ----------------------------------------
+  // Class timetable
+  // ----------------------------------------
+
+  const timetableBox =
+    document.getElementById("timetableBox");
+
+  if (timetableBox) {
+
+    timetableBox.innerHTML = "";
+
+    if (Array.isArray(data.timetable) &&
+        data.timetable.length > 0) {
+
+      data.timetable.forEach((row) => {
+
+        if (!row) {
+          return;
+        }
+
+        const item = document.createElement("div");
+
+        item.className = "timetable-item";
+
+
+        const day = document.createElement("strong");
+
+        day.textContent =
+          row.day || "Class";
+
+        item.appendChild(day);
+
+
+        const details = document.createElement("p");
+
+        details.textContent =
+          row.subject ||
+          row.time ||
+          row.details ||
+          "";
+
+        item.appendChild(details);
+
+
+        timetableBox.appendChild(item);
+
+      });
+
+    } else {
+
+      const empty = document.createElement("p");
+
+      empty.textContent =
+        "Current timetable will be displayed here.";
+
+      timetableBox.appendChild(empty);
+    }
+  }
+
+
+  // ----------------------------------------
   // Gallery
-  // ===============================
+  // ----------------------------------------
 
-  const gallery = document.getElementById("gallery");
+  const gallery =
+    document.getElementById("gallery");
 
-  if (gallery && Array.isArray(data.gallery)) {
+  if (gallery) {
 
     gallery.innerHTML = "";
 
-    data.gallery.forEach((photo) => {
+    if (Array.isArray(data.gallery) &&
+        data.gallery.length > 0) {
 
-      if (!photo || !photo.url) return;
+      data.gallery.forEach((photo) => {
 
-      const img = document.createElement("img");
+        if (!photo) {
+          return;
+        }
 
-      img.src = photo.url;
-      img.alt = photo.caption || "School photo";
-      img.loading = "lazy";
 
-      img.style.maxWidth = "100%";
-      img.style.height = "auto";
-      img.style.borderRadius = "10px";
-      img.style.margin = "8px";
+        // Support both:
+        // gallery: ["image-url"]
+        // gallery: [{url:"image-url", caption:"..." }]
 
-      gallery.appendChild(img);
-    });
+        let photoUrl = "";
+        let caption = "School photo";
+
+
+        if (typeof photo === "string") {
+
+          photoUrl = photo;
+
+        } else if (typeof photo === "object") {
+
+          photoUrl =
+            photo.url ||
+            photo.imageUrl ||
+            photo.src ||
+            "";
+
+          caption =
+            photo.caption ||
+            photo.title ||
+            "School photo";
+        }
+
+
+        if (!photoUrl) {
+          return;
+        }
+
+
+        const wrapper =
+          document.createElement("div");
+
+        wrapper.className = "gallery-item";
+
+
+        const img =
+          document.createElement("img");
+
+        img.src = photoUrl;
+
+        img.alt = caption;
+
+        img.loading = "lazy";
+
+
+        // Prevent broken images from breaking layout
+        img.onerror = function () {
+          wrapper.remove();
+        };
+
+
+        wrapper.appendChild(img);
+
+
+        const captionElement =
+          document.createElement("p");
+
+        captionElement.textContent = caption;
+
+        wrapper.appendChild(captionElement);
+
+
+        gallery.appendChild(wrapper);
+
+      });
+
+    } else {
+
+      const empty =
+        document.createElement("p");
+
+      empty.textContent =
+        "School photos will appear here.";
+
+      gallery.appendChild(empty);
+    }
   }
 
 
-  // ===============================
-  // Google Maps / Contact link
-  // ===============================
+  // ----------------------------------------
+  // Google Maps
+  // ----------------------------------------
 
-  const mapLink = document.getElementById("mapLink");
+  const mapLink =
+    document.getElementById("mapLink");
 
   if (mapLink && data.mapUrl) {
 
     mapLink.href = data.mapUrl;
+
     mapLink.target = "_blank";
-    mapLink.rel = "noopener noreferrer";
+
+    mapLink.rel =
+      "noopener noreferrer";
+
+    mapLink.style.display = "inline-block";
   }
+
+
+  // ----------------------------------------
+  // Footer year
+  // ----------------------------------------
+
+  setText(
+    "year",
+    new Date().getFullYear()
+  );
+
+
+  // Footer name
+  setText(
+    "footerName",
+    data.schoolName || "GBHSS Sita Road"
+  );
 }
 
 
-// ===============================
-// Load website from Firestore
-// ===============================
+// ------------------------------------------
+// Load school website from Firestore
+// ------------------------------------------
 
 async function loadSchoolWebsite() {
 
-  const loading = document.getElementById("loading");
-
   try {
 
-    const snapshot = await getDoc(CONTENT_DOC);
+    const snapshot =
+      await getDoc(CONTENT_DOC);
+
 
     if (snapshot.exists()) {
 
-      const data = snapshot.data();
+      const data =
+        snapshot.data();
+
+      console.log(
+        "School data loaded successfully:",
+        data
+      );
 
       applySchoolData(data);
 
     } else {
 
-      console.warn("Firestore document site/content does not exist.");
+      console.warn(
+        "Firestore document does not exist."
+      );
+
+      // Still show the website
+      // using default HTML text.
+
+      applySchoolData({});
 
     }
+
+
+    showWebsite();
 
   } catch (error) {
 
-    console.error("Firebase/Firestore error:", error);
+    console.error(
+      "Firebase/Firestore error:",
+      error
+    );
 
-    // Show a useful message instead of staying stuck forever.
-
-    if (loading) {
-      loading.textContent =
-        "Website could not load school data. Please try again.";
-    }
-
-    return;
-
-  } finally {
-
-    // Always remove the loading screen
-    // when Firebase has finished.
-
-    document.body.classList.add("loaded");
-
+    showError(
+      "Firebase error: " + error.message
+    );
   }
 }
 
 
-// ===============================
-// Footer year
-// ===============================
-
-const yearElement = document.getElementById("year");
-
-if (yearElement) {
-  yearElement.textContent = new Date().getFullYear();
-}
-
-
-// ===============================
+// ------------------------------------------
 // Start website
-// ===============================
+// ------------------------------------------
 
-loadSchoolWebsite();    if (gallery) {
-
-      gallery.innerHTML = "";
-
-      data.gallery.forEach(photo => {
-
-        if (!photo || !photo.url) {
-          return;
-        }
-
-
-        const img =
-          document.createElement("img");
-
-        img.src = photo.url;
-
-        img.alt =
-          photo.caption || "School photo";
-
-        img.loading = "lazy";
-
-
-        gallery.appendChild(img);
-
-      });
-
-    }
-
-  }
-
-
-  // Google Maps / contact link
-  const mapLink =
-    document.getElementById("mapLink");
-
-  if (
-    mapLink &&
-    data.mapUrl
-  ) {
-
-    mapLink.href = data.mapUrl;
-
-    mapLink.target = "_blank";
-
-    mapLink.rel = "noopener noreferrer";
-
-  }
-
-}
-
-
-// Start the website
-loadSchoolWebsite();    if (gallery) {
-
-      gallery.innerHTML = "";
-
-      data.gallery.forEach(photo => {
-
-        if (!photo || !photo.url) {
-          return;
-        }
-
-
-        const img =
-          document.createElement("img");
-
-        img.src = photo.url;
-
-        img.alt =
-          photo.caption || "School photo";
-
-        img.loading = "lazy";
-
-
-        gallery.appendChild(img);
-
-      });
-
-    }
-
-  }
-
-
-  // Google Maps / contact link
-  const mapLink =
-    document.getElementById("mapLink");
-
-  if (
-    mapLink &&
-    data.mapUrl
-  ) {
-
-    mapLink.href = data.mapUrl;
-
-    mapLink.target = "_blank";
-
-    mapLink.rel = "noopener noreferrer";
-
-  }
-
-}
-
-
-// Start the website
 loadSchoolWebsite();
